@@ -1,0 +1,134 @@
+---
+title: "TA2：Visualization"
+author: "Tung"
+date: "2018年3月11日"
+output: 
+  html_document:
+    toc : true
+    toc_depth: 2
+    toc_float: 
+      collapsed: false
+      smooth_scroll: true
+---
+# ggplot2
+
+在探索式資料分析(Exploratory Data Analysis)的過程中，將資料視覺化是相當重要的一環，除了R內建的繪圖指令外，還有很多厲害的繪圖套件，本次TA課將介紹ggplot2這個套件，網路上也有很多相關教學可以參考。
+
+```{r}
+# install.packages("ggplot2")
+library(ggplot2)
+```
+
+以上課中使用過的資料carsale作為範例，為求方便直接將有NA的資料刪除，但是實際再分析實要視狀況處置這些NA值。
+```{r warning=FALSE}
+load("carsale.Rda")
+mydata = na.omit(mydata)  #去掉所有NA 
+```
+
+先開啟ggplot()
+```{r}
+ggplot()
+```
+畫面中的空白就是繪圖的底稿，ggplot是一種圖層式的繪圖，將所要執行的指令一個一個堆疊上去，彼此用**+**連結。  
+
+
+一維資料常用geom選項：  
+ 
+geom_bar : 長條圖  
+geom_histogram : 直方圖  
+geom_density : 機率密度圖  
+
+二維資料常用geom選項：
+
+geom_point : 散佈圖  
+geom_boxplot : 箱型圖  
+
+### 一維資料
+
+##### geom_bar
+```{r}
+# install.packages("scales")
+library(scales)
+g <- ggplot(mydata,aes(size))
+g + geom_bar(position = "stack" ,aes(fill = transmission),width = 0.7)
+color <- c("turquoise", "slategray2", "azure3")  # Rcolor參考reference
+g + geom_bar(position = "fill" ,aes(fill = transmission)) + scale_fill_manual(values=color) + scale_y_continuous(labels=percent)
+
+# install.packages("ggthemes")
+library(ggthemes) # 套用不同主題
+honda <- subset(mydata, maker =="honda")
+hyuandai <- subset(mydata, maker =="hyundai")
+compare <- rbind(honda,hyuandai)
+g2 <- ggplot(compare,aes(maker))
+g2 + geom_bar(position = "dodge",aes(fill = transmission)) + ggtitle(" Honda V.S Hyundai") + theme_economist()
+```
+
+##### geom_histogram
+
+```{r}
+g <- ggplot(mydata, aes(price)) 
+g + geom_histogram()+ ylab("次數")
+```
+
+##### geom_density
+
+```{r}
+honda <- subset(mydata, maker =="honda")
+hyundai <- subset(mydata, maker =="hyundai")
+bmw <- subset(mydata, maker =="bmw")
+ford <- subset(mydata, maker =="ford")
+compare2 <- rbind(honda,hyundai,bmw,ford)
+
+g <- ggplot(compare2,aes(price,colour = maker, fill = maker))
+g + geom_density() + ggtitle("Japan/Korea/German/USA car price")  +theme(axis.text.y=element_blank())  # 隱藏y軸的機率值
+```
+
+##### geom_point
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE) + # se : standard error
+  labs(caption = "(based on data from ...)")
+```
+
+
+##### geom_boxplot
+
+```{r}
+p <- ggplot(mydata,aes(type,price))
+p + geom_boxplot(fill = "white", colour = "#3366FF")
+
+```
+
+
+# ztable
+
+另外再介紹一個繪製表格的套件ztable，使用時要將資料格式改為data.frame。
+
+```{r message = FALSE}
+# install.packages("ztable")
+library(ztable)
+z = ztable(head(iris),align = "cccccc")
+z
+```
+
+align : 改變data在每個格子中的位置
+
+![ztable](C:/Users/nohah/Desktop/table1.png)
+
+```{r}
+cgroup = c("Sepal","Petal","Species")
+n.cgroup = c(2,2,1)
+z = addcgroup(z,cgroup = cgroup,n.cgroup = n.cgroup)
+z
+```
+
+![ztable2](C:/Users/nohah/Desktop/table2.png)
+
+# reference
+
+[http://ggplot2.tidyverse.org/index.html](http://ggplot2.tidyverse.org/index.html)  
+[https://cran.r-project.org/web/packages/ztable/vignettes/ztable.html](https://cran.r-project.org/web/packages/ztable/vignettes/ztable.html)
+[http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf)
+[https://cran.r-project.org/web/packages/ztable/vignettes/ztable.html](https://cran.r-project.org/web/packages/ztable/vignettes/ztable.html)
